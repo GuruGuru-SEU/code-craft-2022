@@ -15,7 +15,9 @@ void shuffleNMask(int NMask[], int N) {
   random_shuffle(NMask + 1, NMask + N + 1);
 }
 
-int randInt(int upper) { return rand() % (upper + 1); }
+int randInt(long long upper) {
+  return ((rand() << 16ll) + (long long)rand()) % (upper + 1);
+}
 
 void overwriteAns(int X[][40][200], int Xans[][40][200], int T, int M, int N) {
   for (int t = 1; t <= T; ++t)
@@ -32,44 +34,51 @@ void assign(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
   for (int j = 1; j <= N; ++j)
     NMask[j] = j;
 
+  long long sum[200];
+  for (int j = 1; j <= N; ++j)
+    sum[j] = C[j] / 10000 + 1ll;
   for (int t = 1; t <= T; ++t) {
     int cap[200];
+    long long Ssum = 0;
+    bool flag = false;
     for (int j = 1; j <= N; ++j)
-      cap[j] = C[j];
+      if (sum[j] > (1ll << 24))
+        flag = true;
+    if (flag)
+      for (int j = 1; j <= N; j++)
+        sum[j] >>= 1;
+    for (int j = 1; j <= N; ++j) {
+      cap[j] = 0;
+      Ssum += sum[j];
+    }
     shuffleMMask(MMask, M);
     for (int imask = 1; imask <= M; ++imask) {
       int i = MMask[imask];
       int w = D[t][i];
-      int Scap = 0;
-      for (int j = 1; j <= N; ++j)
-        Scap += cap[j];
       shuffleNMask(NMask, N);
       for (int jmask = 1; jmask <= N; ++jmask) {
         int j = NMask[jmask];
         if (Y[i][j] < Q) {
-          int x = min(cap[j], min(w, randInt(2.0 * cap[j] * w / Scap)));
+          int x = min(C[j] - cap[j], min(w, randInt(2ll * sum[j] * w / Ssum)));
           X[t][i][j] += x;
-          Scap -= cap[j];
           w -= x;
-          cap[j] -= x;
+          cap[j] += x;
         }
       }
       while (w) {
-        Scap = 0;
-        for (int j = 1; j <= N; ++j)
-          Scap += cap[j];
         for (int j = 1; j <= N; ++j) {
           if (Y[i][j] < Q) {
-            // FIXME: this is a bug.
-            // int x = min(cap[j], min(w, randInt(100.0 * cap[j] / Scap * w)));
-            int x = min(cap[j], min(w, randInt(1000000)));
+            int x = min(C[j] - cap[j],
+                        min(w, randInt(128ll * sum[j] * w / Ssum + w)));
+            // int x = min(C[j] - cap[j], min(w, randInt(1000000)));
             X[t][i][j] += x;
-            Scap -= cap[j];
             w -= x;
-            cap[j] -= x;
+            cap[j] += x;
           }
         }
       }
     }
+    for (int j = 1; j <= N; ++j)
+      sum[j] += cap[j];
   }
 }

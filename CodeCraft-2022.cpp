@@ -39,7 +39,7 @@ int getIPS95tRough(int jIPS) {
     ts[t].second = t;
   }
   sort(ts + 1, ts + T + 1);
-  if (rand() % 5)
+  if (rand() % 10)
     return ts[pos].second;
   int l = pos, r = T;
   return l + rand() % (r - l + 1);
@@ -106,9 +106,9 @@ int main() {
    */
   memset(X, 0, sizeof(X));
   assign(X, D, C, Y, T, M, N, Q);
+  cout << "\nBefore loose Benchmark: " << runBenchmark(X, T, M, N) << endl;
 
-  for (int j = 1; j <= 1000; ++j) {
-
+  for (int j = 1; j <= 50000; ++j) {
     looseIPS(rand() % N + 1);
     // cout << runBenchmark(X, T, M, N) << endl;
   }
