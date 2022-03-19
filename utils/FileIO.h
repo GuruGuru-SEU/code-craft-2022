@@ -6,74 +6,35 @@
 #define CODECRAFT_2021_FILEIO_H
 
 #include <string>
-#include <unordered_map>
-#include <vector>
 
-typedef std::pair<std::string, std::vector<int>> DemandDataClient;
-typedef std::unordered_map<std::string, std::vector<int>> DemandDataMap;
+using namespace std;
 
-typedef struct {
-  unsigned int cnt;
-  DemandDataMap mp;
-} DemandData;
+const bool LOCAL_DEBUG = true;
 
-typedef std::pair<std::string, int> OfferDataSite;
-typedef std::unordered_map<std::string, int> OfferDataMap;
+/*
+ * @Param int D[][40], string clientName[], int &M, int &T
+ */
+void readDemand(int[][40], string[], int &, int &);
 
-typedef struct {
-  unsigned int cnt;
-  OfferDataMap mp;
-} OfferData;
+/*
+ * @Param int C[], string siteName[], int &N
+ */
+void readCap(int[], string[], int &);
 
-typedef int RestraintDataBound;
-typedef std::pair<std::string, int> RestraintDataSiteQos;
-typedef std::unordered_map<std::string, int> RestraintDataSiteMap;
-typedef std::pair<std::string, RestraintDataSiteMap> RestraintQos;
-typedef std::unordered_map<std::string, RestraintDataSiteMap> RestraintQosMap;
+/*
+ * @Param int Y[][200], int M, int N
+ */
+void readY(int[][200], int, int);
 
-typedef struct {
-  unsigned int cnt;
-  RestraintDataBound bound;
-  RestraintQosMap mp;
-} RestraintData;
+/*
+ * @Param int &Q
+ */
+void readQ(int &);
 
-typedef std::pair<std::string, int> OutputDataSiteBandwidth;
-typedef std::unordered_map<std::string, int> OutputDataSiteMap;
-typedef std::pair<std::string, OutputDataSiteMap> OutputDataClientBandwidth;
-typedef std::unordered_map<std::string, OutputDataSiteMap> OutputDataClientMap;
-typedef std::vector<OutputDataClientMap> OutputDataVector;
-
-typedef struct {
-  OutputDataVector vec;
-} OutputData;
-
-class FileIO {
-private:
-  DemandData *ptrDemandData;
-  void readDemandData();
-  void outputDemandData() const;
-
-  OfferData *ptrOfferData;
-  void readOfferData();
-  void outputOfferData() const;
-
-  RestraintData *ptrRestraintData;
-  void readRestraintData();
-  void outputRestraintData() const;
-
-  OutputData *ptrOutputData;
-
-  static int transStrToInt(std::string);
-
-public:
-  FileIO();
-  ~FileIO();
-  DemandData *getDemandData() const;
-  OfferData *getOfferData() const;
-  RestraintData *getRestraintData() const;
-
-  void setOutputData(OutputData *);
-  void outputToFile() const;
-};
+/*
+ * @Param string clientName[], string siteName[], int Xans[][40][200], int T,
+ * int M, int N
+ */
+void printAns(string[], string[], int[][40][200], int, int, int);
 
 #endif // CODECRAFT_2021_FILEIO_H
