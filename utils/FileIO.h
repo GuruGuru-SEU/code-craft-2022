@@ -11,6 +11,7 @@
 
 typedef std::pair<std::string, std::vector<int>> DemandDataClient;
 typedef std::unordered_map<std::string, std::vector<int>> DemandDataMap;
+typedef std::unordered_map<std::string, int> DemandDataClientIns;
 
 typedef struct {
   unsigned int cnt;

@@ -47,8 +47,6 @@ void FileIO::readDemandData() {
     while (std::getline(ss, element, ',')) {
       clientBandwidths[cnt++].push_back(transStrToInt(element));
     }
-
-    fin.close();
   }
 
   auto it1 = clientNames.begin();
@@ -59,6 +57,8 @@ void FileIO::readDemandData() {
     ptrDemandData->mp.insert(client);
     ++it1, ++it2;
   }
+
+  fin.close();
 }
 
 void FileIO::outputDemandData() const {
@@ -240,6 +240,8 @@ void FileIO::outputToFile() const {
       fout << it2.first << ':';
       bool isFirst = true;
       for (auto &it3 : it2.second) {
+        if (!it3.second)
+          continue;
         if (isFirst)
           isFirst = false;
         else
