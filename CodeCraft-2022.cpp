@@ -107,15 +107,15 @@ int main() {
   memset(X, 0, sizeof(X));
   assign(X, D, C, Y, T, M, N, Q);
 
-  for (int j = 1; j <= 80000; ++j) {
+  for (int j = 1; j <= 1000; ++j) {
 
     looseIPS(rand() % N + 1);
-    cout << runBenchmark(X, T, M, N) << endl;
+    // cout << runBenchmark(X, T, M, N) << endl;
   }
 
   runJudger(X, D, C, Y, T, M, N, Q);
   cout << "\nAns Benchmark: " << runBenchmark(X, T, M, N) << endl;
 
-  printAns(clientName, siteName, Xans, T, M, N);
+  printAns(clientName, siteName, X, T, M, N);
   return 0;
 }
