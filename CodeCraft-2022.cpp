@@ -48,8 +48,8 @@ int main() {
         for (int j = 1; j <= N; ++j) {
           if (Y[i][j] < Q) {
             // FIXME: this is a bug.
-            int x = min(cap[j], min(w, randInt(100.0 * cap[j] / Scap * w)));
-            //  int x = min(cap[j], min(w, randInt(100000)));
+            // int x = min(cap[j], min(w, randInt(100.0 * cap[j] / Scap * w)));
+            int x = min(cap[j], min(w, randInt(100000)));
             X[t][i][j] += x;
             Scap -= cap[j];
             w -= x;
@@ -157,6 +157,8 @@ void printAns() {
           fout << ",";
         fout << "<" << siteName[j] << "," << X[t][i][j] << ">";
       }
+      if (t == T && i == M)
+        continue;
       fout << "\n";
     }
   }
