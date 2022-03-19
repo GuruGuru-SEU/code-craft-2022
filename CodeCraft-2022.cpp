@@ -46,10 +46,12 @@ int main() {
         for (int j = 1; j <= N; ++j)
           Scap += cap[j];
         for (int j = 1; j <= N; ++j) {
+          // cout << j << endl;
           if (Y[i][j] < Q) {
             // FIXME: this is a bug.
             // int x = min(cap[j], min(w, randInt(100.0 * cap[j] / Scap * w)));
             int x = min(cap[j], min(w, randInt(100000)));
+            // cout << x << endl;
             X[t][i][j] += x;
             Scap -= cap[j];
             w -= x;
@@ -72,6 +74,8 @@ void readDemand() {
   fin.open("./data/demand.csv", ios::in);
   string line, element;
   getline(fin, line);
+  if (line[line.size() - 1] == '\r')
+    line = line.substr(0, line.size() - 1);
   ss.str(line);
   getline(ss, element, ',');
   while (getline(ss, element, ',')) {
@@ -79,6 +83,8 @@ void readDemand() {
     clientName[M] = element;
   }
   while (getline(fin, line)) {
+    if (line[line.size() - 1] == '\r')
+      line = line.substr(0, line.size() - 1);
     ++T;
     ss.clear();
     ss.str(line);
@@ -97,7 +103,11 @@ void readCap() {
   fin.open("./data/site_bandwidth.csv", ios::in);
   string line, element;
   getline(fin, line);
+  if (line[line.size() - 1] == '\r')
+    line = line.substr(0, line.size() - 1);
   while (getline(fin, line)) {
+    if (line[line.size() - 1] == '\r')
+      line = line.substr(0, line.size() - 1);
     ++N;
     ss.clear();
     ss.str(line);
@@ -115,8 +125,12 @@ void readY() {
   fin.open("./data/qos.csv", ios::in);
   string line, element;
   getline(fin, line);
+  if (line[line.size() - 1] == '\r')
+    line = line.substr(0, line.size() - 1);
   for (int j = 1; j <= N; ++j) {
     getline(fin, line);
+    if (line[line.size() - 1] == '\r')
+      line = line.substr(0, line.size() - 1);
     ss.clear();
     ss.str(line);
     getline(ss, element, ',');
@@ -130,11 +144,16 @@ void readY() {
 
 void readQ() {
   fstream fin;
+  stringstream ss;
   fin.open("./data/config.ini", ios::in);
   string line, element;
   getline(fin, line);
-  getline(fin, element, '=');
-  getline(fin, element, '=');
+  getline(fin, line);
+  if (line[line.size() - 1] == '\r')
+    line = line.substr(0, line.size() - 1);
+  ss.str(line);
+  getline(ss, element, '=');
+  getline(ss, element, '=');
   Q = stoi(element);
   fin.close();
 }
@@ -142,6 +161,7 @@ void readQ() {
 int randInt(int upper) { return rand() % (upper + 1); }
 
 void printAns() {
+
   fstream fout;
   fout.open("./output/solution.txt", ios::out);
   for (int t = 1; t <= T; ++t) {
