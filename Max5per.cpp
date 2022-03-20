@@ -3,6 +3,7 @@
 //
 
 #include "Max5per.h"
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <iostream>
@@ -16,8 +17,8 @@ struct Node {
     if (val != node.val)
       return val > node.val;
     if (t != node.t)
-      return t > node.t;
-    return j > node.j;
+      return t < node.t;
+    return j < node.j;
   }
 };
 
@@ -85,7 +86,8 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
       for (int t = 1; t <= T; ++t)
         deletedFromSet[t][tp->j] = true;
     }
-    for (int i = 1; i <= M; ++i) {
+
+    for (int i = M; i >= 1; --i) {
       if (Y[i][tp->j] >= Q)
         continue;
       if (siteRemain[tp->t][tp->j] >= remain[tp->t][i]) {
@@ -131,6 +133,58 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
   // passed unit test.
 }
 
+void max5perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
+                  int T, int M, int N, int Q) {
+  for (int t = 1; t <= T; ++t) {
+    for (int j = 1; j <= N; ++j) {
+      siteRemain[t][j] = C[j];
+      for (int i = 1; i <= M; ++i)
+        siteRemain[t][j] -= X[t][i][j];
+    }
+    for (int i = 1; i <= M; ++i) {
+      remain[t][i] = D[t][i];
+      for (int j = 1; j <= N; ++j)
+        remain[t][i] -= X[t][i][j];
+    }
+  }
+
+  for (int j = 1; j <= N; ++j) {
+    int minn = 1e9, cur = 0;
+    for (int t = 1; t <= T; ++t) {
+      if (siteRemain[t][j] == 0)
+        continue;
+      cur = 0;
+      for (int i = 1; i <= M; ++i) {
+        if (Y[i][j] >= Q)
+          continue;
+        cur += remain[t][i];
+      }
+      minn = min(minn, min(cur, siteRemain[t][j]));
+    }
+
+    for (int t = 1; t <= T; ++t) {
+      if (siteRemain[t][j] == 0)
+        continue;
+      for (int i = M; i >= 1; --i) {
+        if (Y[i][j] >= Q)
+          continue;
+        if (remain[t][i] >= minn) {
+          siteRemain[t][j] -= minn;
+          remain[t][i] -= minn;
+          X[t][i][j] += minn;
+          minn = 0;
+          break;
+        } else {
+          siteRemain[t][j] -= remain[t][i];
+          X[t][i][j] += remain[t][i];
+          minn -= remain[t][i];
+          remain[t][i] = 0;
+        }
+      }
+    }
+  }
+}
+
 void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                   int T, int M, int N, int Q) {
   for (int t = 1; t <= T; ++t) {
@@ -145,11 +199,10 @@ void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
         remain[t][i] -= X[t][i][j];
     }
   }
-  //  for (int i = 1; i <= M; ++i)
-  //    cout << remain[1][i] << ' ';
-  //  cout << endl;
+
   for (int t = 1; t <= T; ++t) {
-    for (int i = 1; i <= M; ++i) {
+
+    for (int i = M; i >= 1; --i) {
       if (remain[t][i] == 0)
         continue;
       int cnt = 0;
@@ -162,20 +215,13 @@ void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
       if (cnt == 0) { // This means the algorithm failed, but I don't want to
         continue;     // get a Runtime Error.
       }
-      int rem = remain[t][i], cntt = 0;
-      for (int j = 1; j <= N; ++j) {
+      int rem = remain[t][i];
+
+      for (int j = N; j >= 1; --j) {
         if (Y[i][j] >= Q)
           continue;
         if (!siteRemain[t][j])
           continue;
-        //        ++cntt;
-        //        if (cntt <= (rem % cnt)) {
-        //          X[t][i][j] += rem / cnt + 1;
-        //          siteRemain[t][j] -= rem / cnt + 1;
-        //        } else {
-        //          X[t][i][j] += rem / cnt;
-        //          siteRemain[t][j] -= rem / cnt;
-        //        }
         if (siteRemain[t][j] >= rem / cnt) {
           siteRemain[t][j] -= rem / cnt;
           X[t][i][j] += rem / cnt;
@@ -186,6 +232,40 @@ void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
           X[t][i][j] += siteRemain[t][j];
           rem -= siteRemain[t][j];
           --cnt;
+        }
+      }
+    }
+  }
+}
+
+void max5perPart2v2(int X[][40][200], int D[][40], const int C[], int Y[][200],
+                    int T, int M, int N, int Q) {
+  for (int t = 1; t <= T; ++t) {
+    for (int j = 1; j <= N; ++j) {
+      siteRemain[t][j] = C[j];
+      for (int i = 1; i <= M; ++i)
+        siteRemain[t][j] -= X[t][i][j];
+    }
+    for (int i = 1; i <= M; ++i) {
+      remain[t][i] = D[t][i];
+      for (int j = 1; j <= N; ++j)
+        remain[t][i] -= X[t][i][j];
+    }
+  }
+  for (int t = 1; t <= T; ++t) {
+    for (int i = 1; i <= M; ++i) {
+      for (int j = 1; j <= N; ++j) {
+        if (Y[i][j] >= Q)
+          continue;
+        if (siteRemain[t][j] >= remain[t][i]) {
+          siteRemain[t][j] -= remain[t][i];
+          X[t][i][j] += remain[t][i];
+          remain[t][i] = 0;
+          break;
+        } else {
+          remain[t][i] -= siteRemain[t][j];
+          X[t][i][j] += siteRemain[t][j];
+          siteRemain[t][j] = 0;
         }
       }
     }

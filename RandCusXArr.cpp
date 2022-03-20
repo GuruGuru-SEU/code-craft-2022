@@ -7,6 +7,9 @@
 
 using namespace std;
 
+int remain2[9000][40];
+int siteRemain2[9000][200];
+
 void shuffleMMask(int MMask[], int M) {
   random_shuffle(MMask + 1, MMask + M + 1);
 }
@@ -26,6 +29,20 @@ void overwriteAns(int X[][40][200], int Xans[][40][200], int T, int M, int N) {
 
 void assign(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
             int M, int N, int Q) {
+
+  for (int t = 1; t <= T; ++t) {
+    for (int j = 1; j <= N; ++j) {
+      siteRemain2[t][j] = C[j];
+      for (int i = 1; i <= M; ++i)
+        siteRemain2[t][j] -= X[t][i][j];
+    }
+    for (int i = 1; i <= M; ++i) {
+      remain2[t][i] = D[t][i];
+      for (int j = 1; j <= N; ++j)
+        remain2[t][i] -= X[t][i][j];
+    }
+  }
+
   int MMask[40], NMask[200];
   for (int i = 1; i <= M; ++i)
     MMask[i] = i;
@@ -35,11 +52,11 @@ void assign(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
   for (int t = 1; t <= T; ++t) {
     int cap[200];
     for (int j = 1; j <= N; ++j)
-      cap[j] = C[j];
+      cap[j] = siteRemain2[t][j];
     shuffleMMask(MMask, M);
     for (int imask = 1; imask <= M; ++imask) {
       int i = MMask[imask];
-      int w = D[t][i];
+      int w = remain2[t][i];
       int Scap = 0;
       for (int j = 1; j <= N; ++j)
         Scap += cap[j];
