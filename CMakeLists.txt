@@ -23,4 +23,4 @@ SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++11")
 aux_source_directory(. DIR_SRCS)
 
 # 指定生成目标
-add_executable(CodeCraft-2022 ${DIR_SRCS} utils/FileIO.cpp utils/FileIO.h utils/Benchmark.h utils/Benchmark.cpp RandCusXArr.cpp RandCusXArr.h)
+add_executable(CodeCraft-2022 ${DIR_SRCS} utils/FileIO.cpp utils/FileIO.h utils/Benchmark.h utils/Benchmark.cpp RandCusXArr.cpp RandCusXArr.h Max5per.h Max5per.cpp Max5per.h)
