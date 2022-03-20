@@ -32,9 +32,14 @@ int main() {
   memset(X, 0, sizeof(X));
   max5per(X, D, C, Y, T, M, N, Q);
 
-  runJudger(X, D, C, Y, T, M, N, Q);
-  cout << "\nAns Benchmark: " << ansBenchmark << endl;
+  /*
+   * Run Hao-Zhang algorithm.
+   */
+  max5perPart2(X, D, C, Y, T, M, N, Q);
 
-  printAns(clientName, siteName, Xans, T, M, N);
+  runJudger(X, D, C, Y, T, M, N, Q);
+  cout << "\nAns Benchmark: " << runBenchmark(X, T, M, N) << endl;
+
+  printAns(clientName, siteName, X, T, M, N);
   return 0;
 }

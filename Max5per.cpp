@@ -3,6 +3,7 @@
 //
 
 #include "Max5per.h"
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <set>
@@ -53,7 +54,8 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
   // passed unit test.
 
   // FIXME: Remember to modify limit to 5% point!!
-  int limit = 1;
+  int pos = ceil(0.95 * T);
+  int limit = T - pos;
 
   for (int j = 1; j <= N; ++j)
     used[j] = 0;
@@ -67,16 +69,17 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
   while (!st.empty()) {
 
     auto tp = st.begin();
-    st.erase(tp);
+
     if (deletedFromSet[tp->t][tp->j]) {
+      st.erase(tp);
       continue;
     }
     deletedFromSet[tp->t][tp->j] = true;
 
     ++used[tp->j];
 
-    cout << "ISP No." << tp->j << " has chosen " << used[tp->j] << " times. ";
-    cout << "Bandwidth = " << tp->val << endl;
+    //   cout << "ISP No." << tp->j << " has chosen " << used[tp->j] << " times.
+    //   "; cout << "Bandwidth = " << tp->val << endl;
 
     if (used[tp->j] == limit) {
       for (int t = 1; t <= T; ++t)
@@ -123,6 +126,55 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
       tmp.j = j;
       st.insert(tmp);
     }
+    st.erase(tp);
   }
   // passed unit test.
+}
+
+void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
+                  int T, int M, int N, int Q) {
+  for (int t = 1; t <= T; ++t) {
+    for (int j = 1; j <= N; ++j) {
+      siteRemain[t][j] = C[j];
+      for (int i = 1; i <= M; ++i)
+        siteRemain[t][j] -= X[t][i][j];
+    }
+    for (int i = 1; i <= M; ++i) {
+      remain[t][i] = D[t][i];
+      for (int j = 1; j <= N; ++j)
+        remain[t][i] -= X[t][i][j];
+    }
+  }
+  //  for (int i = 1; i <= M; ++i)
+  //    cout << remain[1][i] << ' ';
+  //  cout << endl;
+  for (int t = 1; t <= T; ++t) {
+    for (int i = 1; i <= M; ++i) {
+      if (remain[t][i] == 0)
+        continue;
+      int cnt = 0;
+      for (int j = 1; j <= N; ++j) {
+        if (Y[i][j] >= Q)
+          continue;
+        if (siteRemain[t][j])
+          cnt++;
+      }
+      if (cnt == 0) { // This means the algorithm failed, but I don't want to
+        continue;     // get a Runtime Error.
+      }
+      int rem = remain[t][i], cntt = 0;
+      for (int j = 1; j <= N; ++j) {
+        if (Y[i][j] >= Q)
+          continue;
+        if (!siteRemain[t][j])
+          continue;
+        ++cntt;
+        if (cntt <= (rem % cnt)) {
+          X[t][i][j] += rem / cnt + 1;
+        } else {
+          X[t][i][j] += rem / cnt;
+        }
+      }
+    }
+  }
 }
