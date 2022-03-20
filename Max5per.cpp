@@ -78,8 +78,8 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
 
     ++used[tp->j];
 
-    //   cout << "ISP No." << tp->j << " has chosen " << used[tp->j] << " times.
-    //   "; cout << "Bandwidth = " << tp->val << endl;
+    // cout << "ISP No." << tp->j << " has chosen " << used[tp->j] << " times.";
+    // cout << "Bandwidth = " << tp->val << endl;
 
     if (used[tp->j] == limit) {
       for (int t = 1; t <= T; ++t)
@@ -168,11 +168,24 @@ void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
           continue;
         if (!siteRemain[t][j])
           continue;
-        ++cntt;
-        if (cntt <= (rem % cnt)) {
-          X[t][i][j] += rem / cnt + 1;
-        } else {
+        //        ++cntt;
+        //        if (cntt <= (rem % cnt)) {
+        //          X[t][i][j] += rem / cnt + 1;
+        //          siteRemain[t][j] -= rem / cnt + 1;
+        //        } else {
+        //          X[t][i][j] += rem / cnt;
+        //          siteRemain[t][j] -= rem / cnt;
+        //        }
+        if (siteRemain[t][j] >= rem / cnt) {
+          siteRemain[t][j] -= rem / cnt;
           X[t][i][j] += rem / cnt;
+          rem -= rem / cnt;
+          --cnt;
+        } else {
+          siteRemain[t][j] = 0;
+          X[t][i][j] += siteRemain[t][j];
+          rem -= siteRemain[t][j];
+          --cnt;
         }
       }
     }
