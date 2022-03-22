@@ -4,7 +4,7 @@ This is the mixture of several thoughts.
 
 ## A Loser's words
 
-I suppose that all of our group members could understand Chinese, so I would not bother myself using weird English.
+I suppose that all of our group members could understand Chinese, so I would not bother myself using awkward English.
 
 > 负优化 1
 >
