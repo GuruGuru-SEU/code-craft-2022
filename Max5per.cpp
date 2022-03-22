@@ -22,7 +22,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
     pair<int, int> demand[200];
     memset(used, 0, sizeof used); // 每个ISP在时域上被尽量使用的次数 T*5%
-    memcpy(remain, D, sizeof D);
+    memcpy(remain, D, sizeof remain);
     bool flag = true;
     int threshold = floor((double)T * 0.05); // 后5%
     for (int t = 1; t <= T; t++)
