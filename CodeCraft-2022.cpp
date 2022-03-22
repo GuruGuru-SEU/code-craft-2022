@@ -17,30 +17,30 @@ int T, M, N, Q, C[200], Y[40][200], X[9000][40][200], D[9000][40];
 string clientName[40], siteName[200];
 
 int main() {
-  srand(time(nullptr));
+    srand(time(nullptr));
 
-  readDemand(D, clientName, M, T);
-  readCap(C, siteName, N);
-  readY(Y, M, N);
-  readQ(Q);
+    readDemand(D, clientName, M, T);
+    readCap(C, siteName, N);
+    readY(Y, M, N);
+    readQ(Q);
 
-  /*
-   * Run Max-5-per algorithm.
-   */
-  memset(X, 0, sizeof(X));
-  max5per(X, D, C, Y, T, M, N, Q);
+    /*
+     * Run Max-5-per algorithm.
+     */
+    memset(X, 0, sizeof(X));
+    // assign(X, D, C, Y, T, M, N, Q);
 
-  /*
-   * Run Jesus's algorithm.
-   */
-  max5perPart1(X, D, C, Y, T, M, N, Q);
-  max5perPart2(X, D, C, Y, T, M, N, Q);
+    max5per(X, D, C, Y, T, M, N, Q);
 
-  //  assign(X, D, C, Y, T, M, N, Q);
+    /*
+     * Run Jesus's algorithm.
+     */
+    max5perPart1(X, D, C, Y, T, M, N, Q);
+    max5perPart2(X, D, C, Y, T, M, N, Q);
 
-  runJudger(X, D, C, Y, T, M, N, Q);
-  cout << "\nAns Benchmark: " << runBenchmark(X, T, M, N) << endl;
+    runJudger(X, D, C, Y, T, M, N, Q);
+    cout << "\nAns Benchmark: " << runBenchmark(X, T, M, N) << endl;
 
-  printAns(clientName, siteName, X, T, M, N);
-  return 0;
+    printAns(clientName, siteName, X, T, M, N);
+    return 0;
 }

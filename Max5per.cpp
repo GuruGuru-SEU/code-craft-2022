@@ -8,129 +8,77 @@
 #include <cstring>
 #include <iostream>
 #include <set>
+#include <map>
 
 using namespace std;
 
-struct Node {
-    int val, t, j;
-    bool operator<(const Node &node) const {
-        if (val != node.val)
-            return val > node.val;
-        if (t != node.t)
-            return t < node.t;
-        return j < node.j;
-    }
-};
 
-int maxBand[9000][200];
-bool deletedFromSet[9000][200];
-int used[200];
 int remain[9000][40];
 int siteRemain[9000][200];
-set<Node> st;
+bool mark95[9000][200];
+int used[200];  // 每个ISP在时域上被尽量使用的次数 T*5%
 
 void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
-    for (int t = 1; t <= T; ++t) {
-        for (int j = 1; j <= N; ++j) {
-            maxBand[t][j] = 0;
-            deletedFromSet[t][j] = false;
-            for (int i = 1; i <= M; ++i) {
+    pair<int, int> demand[200];
+    memset(used, 0, sizeof used); // 每个ISP在时域上被尽量使用的次数 T*5%
+    memcpy(remain, D, sizeof D);
+    bool flag = true;
+    int threshold = floor((double)T * 0.05); // 后5%
+    for (int t = 1; t <= T; t++)
+        for (int i = 1; i <= M; i++)
+            for (int j = 1; j <= N; j++)
                 if (Y[i][j] < Q)
-                    maxBand[t][j] += D[t][i];
+                    siteRemain[t][j] += remain[t][i];
+    while (flag) { // 如果全局能找到符合条件的继续循环
+        flag = false;
+        int maxn = 0, maxj, maxt;
+        for (int t = 1; t <= T; t++)
+            for (int j = 1; j <= N; j++)
+                if (used[j] < threshold && !mark95[t][j] && siteRemain[t][j] > maxn) {
+                    maxn = siteRemain[t][j];
+                    maxj = j;
+                    maxt = t;
+                }
+        if (maxn) {
+            flag = true;
+            mark95[maxt][maxj] = true;
+            used[maxj]++;
+            int isp = C[maxj];
+            for (int i = 1; i <= M; i++)
+                demand[i] = make_pair(remain[maxt][i], i);
+            sort(demand + 1, demand + M + 1, [](pair<int, int> x, pair<int, int> y) { return x.first > y.first; });
+            for (int i = 1; i <= M; i++)
+                for (int j = 1; j <= N; j++)
+                    if (Y[i][j] < Q) {
+                        if (j == maxj) continue;
+                        siteRemain[maxt][j] -= remain[maxt][i];
+                    }
+            for (int i = 1; i <= M; i++) {
+                int nd = demand[i].first;// 客户的需求
+                int ci = demand[i].second;// 客户id=j
+                if (Y[ci][maxj] >= Q) continue;
+                if (!nd) break;
+                if (isp > nd) {
+                    X[maxt][ci][maxj] += nd;
+                    isp -= nd;
+                    remain[maxt][ci] = 0;
+                }
+                else {
+                    X[maxt][ci][maxj] += isp;
+                    remain[maxt][ci] -= isp;
+                    isp = 0;
+                    break; // 全部用完
+                }
             }
+            for (int i = 1; i <= M; i++)
+                for (int j = 1; j <= N; j++)
+                    if (Y[i][j] < Q) {
+                        if (j == maxj) continue;
+                        siteRemain[maxt][j] += remain[maxt][i];
+                    }
         }
     }
-    // passed unit test.
-    st.clear();
-    for (int t = 1; t <= T; ++t) {
-        for (int j = 1; j <= N; ++j) {
-            struct Node tmp {};
-            tmp.val = min(C[j], maxBand[t][j]);
-            tmp.t = t;
-            tmp.j = j;
-            st.insert(tmp);
-        }
-    }
-    // passed unit test.
-
-    // FIXME: Remember to modify limit to 5% point!!
-    int pos = ceil(0.95 * T);
-    int limit = T - pos;
-
-    for (int j = 1; j <= N; ++j)
-        used[j] = 0;
-    for (int t = 1; t <= T; ++t)
-        for (int i = 1; i <= M; ++i)
-            remain[t][i] = D[t][i];
-    for (int t = 1; t <= T; ++t)
-        for (int j = 1; j <= N; ++j)
-            siteRemain[t][j] = C[j];
-
-    while (!st.empty()) {
-
-        auto tp = st.begin();
-
-        if (deletedFromSet[tp->t][tp->j]) {
-            st.erase(tp);
-            continue;
-        }
-        deletedFromSet[tp->t][tp->j] = true;
-
-        ++used[tp->j];
-
-        // cout << "ISP No." << tp->j << " has chosen " << used[tp->j] << " times.";
-        // cout << "Bandwidth = " << tp->val << endl;
-
-        if (used[tp->j] == limit) {
-            for (int t = 1; t <= T; ++t)
-                deletedFromSet[t][tp->j] = true;
-        }
-
-        for (int i = M; i >= 1; --i) {
-            if (Y[i][tp->j] >= Q)
-                continue;
-            if (siteRemain[tp->t][tp->j] >= remain[tp->t][i]) {
-                siteRemain[tp->t][tp->j] -= remain[tp->t][i];
-                X[tp->t][i][tp->j] += remain[tp->t][i];
-                remain[tp->t][i] = 0;
-            } else {
-                remain[tp->t][i] -= siteRemain[tp->t][tp->j];
-                X[tp->t][i][tp->j] += siteRemain[tp->t][tp->j];
-                siteRemain[tp->t][tp->j] = 0;
-                break;
-            }
-        }
-        for (int j = 1; j <= N; ++j) {
-            if (deletedFromSet[tp->t][j])
-                continue;
-            struct Node tmp {};
-            tmp.val = min(C[j], maxBand[tp->t][j]);
-            tmp.t = tp->t;
-            tmp.j = j;
-            auto cur = st.find(tmp);
-            if (cur == st.end())
-                continue;
-            st.erase(cur);
-        }
-        for (int j = 1; j <= N; ++j) {
-            if (deletedFromSet[tp->t][j])
-                continue;
-            maxBand[tp->t][j] = 0;
-            for (int i = 1; i <= M; ++i) {
-                if (Y[i][j] >= Q)
-                    continue;
-                maxBand[tp->t][j] += remain[tp->t][i];
-            }
-            struct Node tmp {};
-            tmp.val = min(C[j], maxBand[tp->t][j]);
-            tmp.t = tp->t;
-            tmp.j = j;
-            st.insert(tmp);
-        }
-        st.erase(tp);
-    }
-    // passed unit test.
 }
 
 void max5perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
@@ -138,8 +86,9 @@ void max5perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
     for (int t = 1; t <= T; ++t) {
         for (int j = 1; j <= N; ++j) {
             siteRemain[t][j] = C[j];
-            for (int i = 1; i <= M; ++i)
+            for (int i = 1; i <= M; ++i) {
                 siteRemain[t][j] -= X[t][i][j];
+            }
         }
         for (int i = 1; i <= M; ++i) {
             remain[t][i] = D[t][i];
@@ -186,18 +135,14 @@ void max5perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
 }
 
 long long baseLine[200], cap[9000][200];
-bool mark95[9000][200];
 
 void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                   int T, int M, int N, int Q) {
-    memset(mark95, false, sizeof mark95);
     for (int t = 1; t <= T; ++t) {
         for (int j = 1; j <= N; ++j) {
             siteRemain[t][j] = C[j];
-            for (int i = 1; i <= M; ++i) {
+            for (int i = 1; i <= M; ++i)
                 siteRemain[t][j] -= X[t][i][j];
-                if (X[t][i][j]) mark95[t][j] = true;
-            }
         }
         for (int i = 1; i <= M; ++i) {
             remain[t][i] = D[t][i];
@@ -277,39 +222,5 @@ void max5perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                             }
                     }
             }
-    }
-}
-
-void max5perPart2v2(int X[][40][200], int D[][40], const int C[], int Y[][200],
-                    int T, int M, int N, int Q) {
-    for (int t = 1; t <= T; ++t) {
-        for (int j = 1; j <= N; ++j) {
-            siteRemain[t][j] = C[j];
-            for (int i = 1; i <= M; ++i)
-                siteRemain[t][j] -= X[t][i][j];
-        }
-        for (int i = 1; i <= M; ++i) {
-            remain[t][i] = D[t][i];
-            for (int j = 1; j <= N; ++j)
-                remain[t][i] -= X[t][i][j];
-        }
-    }
-    for (int t = 1; t <= T; ++t) {
-        for (int i = 1; i <= M; ++i) {
-            for (int j = 1; j <= N; ++j) {
-                if (Y[i][j] >= Q)
-                    continue;
-                if (siteRemain[t][j] >= remain[t][i]) {
-                    siteRemain[t][j] -= remain[t][i];
-                    X[t][i][j] += remain[t][i];
-                    remain[t][i] = 0;
-                    break;
-                } else {
-                    remain[t][i] -= siteRemain[t][j];
-                    X[t][i][j] += siteRemain[t][j];
-                    siteRemain[t][j] = 0;
-                }
-            }
-        }
     }
 }
