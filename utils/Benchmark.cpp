@@ -18,7 +18,7 @@ void runJudger(const int X[][40][200], const int D[][40], const int C[],
         if (X[t][i][j] < 0)
           flag = false;
   if (!flag)
-    cout << "Failed Constraint 1." << endl;
+    cout << "Failed Constraint 1." << endl, exit(-1);
   else
     cout << "Passed Constraint 1." << endl;
 

@@ -26,7 +26,4 @@ void max5perPart1(int[][40][200], int[][40], const int[], int[][200], int, int,
 void max5perPart2(int[][40][200], int[][40], const int[], int[][200], int, int,
                   int, int);
 
-void max5perPart2v2(int[][40][200], int[][40], const int[], int[][200], int,
-                    int, int, int);
-
 #endif // CODECRAFT_2021_MAX5PER_H
