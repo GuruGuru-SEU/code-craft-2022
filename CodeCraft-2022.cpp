@@ -30,11 +30,8 @@ int main() {
    * Run Max-5-per algorithm.
    */
   memset(X, 0, sizeof(X));
-  // assign(X, D, C, Y, T, M, N, Q);
-
-  max5per(X, D, C, Y, T, M, N, Q);
-
-  // iterate5per(X, D, C, Y, T, M, N, Q);
+  // Temp disable
+  // max5per(X, D, C, Y, T, M, N, Q);
 
   /*
    * Run Jesus's algorithm.
@@ -55,7 +52,6 @@ int main() {
     }
   }
 
-  // iterate95per(X, D, C, Y, T, M, N, Q);
   runJudger(Xans, D, C, Y, T, M, N, Q);
   cout << "\nAns Benchmark: " << runBenchmark(X, T, M, N) << endl;
 
