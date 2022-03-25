@@ -2,6 +2,7 @@
 // Created by tth37 on 2022/3/19.
 //
 
+#include "Benchmark.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>

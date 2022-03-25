@@ -1,4 +1,4 @@
-#include "FileIO.h"
+#include "FileIO.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -149,6 +149,14 @@ void readQ(int &Q) {
   Q = stoi(element);
   fin.close();
 }
+
+void overwriteAns(int X[][40][200], int Xans[][40][200], int T, int M, int N) {
+  for (int t = 1; t <= T; ++t)
+    for (int i = 1; i <= M; ++i)
+      for (int j = 1; j <= N; ++j)
+        Xans[t][i][j] = X[t][i][j];
+}
+
 
 void printAns(string clientName[], string siteName[], int Xans[][40][200],
               int T, int M, int N) {

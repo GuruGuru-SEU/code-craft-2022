@@ -32,6 +32,11 @@ void readY(int[][200], int, int);
 void readQ(int &);
 
 /*
+ * @Param int X[][40][200], int Xans[][40][200], int T, int M, int N
+ */
+void overwriteAns(int[][40][200], int[][40][200], int, int, int);
+
+/*
  * @Param string clientName[], string siteName[], int Xans[][40][200], int T,
  * int M, int N
  */
