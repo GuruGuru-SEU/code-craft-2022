@@ -20,7 +20,7 @@ double log_C[1000010];
 void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
     int demand[200];
-    for (int i = 1; i <= 1e6; i++)
+    for (int i = 0; i <= 1e6; i++)
         log_C[i] = log((double)i + 2.0);
     memset(used, 0, sizeof used); // T*5%
     memcpy(remain, D, sizeof remain);
@@ -103,57 +103,58 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
     }
 }
 
-void max95per(int X[][40][200], int D[][40], const int C[], int Y[][200],
-                   int T, int M, int N, int Q) {
-    for (int t = 1; t <= T; ++t) {
-        for (int j = 1; j <= N; ++j) {
-            siteRemain[t][j] = C[j];
-            for (int i = 1; i <= M; ++i)
-                siteRemain[t][j] -= X[t][i][j];
-        }
-        for (int i = 1; i <= M; ++i) {
-            remain[t][i] = D[t][i];
-            for (int j = 1; j <= N; ++j)
-                remain[t][i] -= X[t][i][j];
-        }
-    }
-    
-    for (int t = 1; t <= T; ++t) {
-        for (int i = M; i >= 1; --i) {
-            if (remain[t][i] == 0)
-                continue;
-            int cnt = 0;
-            for (int j = 1; j <= N; ++j) {
-                if (Y[i][j] >= Q)
-                    continue;
-                if (siteRemain[t][j])
-                    cnt++;
-            }
-            if (cnt == 0) { // This means the algorithm failed, but I don't want to
-                continue;   // get a Runtime Error.
-            }
-            int rem = remain[t][i];
+int siteAvail[9000][200], avail[9000][40];
 
-            for (int j = N; j >= 1; --j) {
-                if (Y[i][j] >= Q)
-                    continue;
-                if (!siteRemain[t][j])
-                    continue;
-                if (siteRemain[t][j] >= rem / cnt) {
-                    siteRemain[t][j] -= rem / cnt;
-                    X[t][i][j] += rem / cnt;
-                    rem -= rem / cnt;
-                    --cnt;
-                } else {
-                    siteRemain[t][j] = 0;
-                    X[t][i][j] += siteRemain[t][j];
-                    rem -= siteRemain[t][j];
-                    --cnt;
-                }
+int beta = 128;
+
+void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
+                   int T, int M, int N, int Q) {
+    bool flag = true;
+    int ans, lastans = -1;
+    while (flag) {
+        for (int t = 1; t <= T; ++t) {
+            for (int j = 1; j <= N; ++j) {
+                siteRemain[t][j] = C[j];
+                siteAvail[t][j] = 0;
+                for (int i = 1; i <= M; ++i)
+                    siteRemain[t][j] -= X[t][i][j];
+            }
+            for (int i = 1; i <= M; ++i) {
+                remain[t][i] = D[t][i];
+                avail[t][i] = 0;
+                for (int j = 1; j <= N; ++j)
+                    remain[t][i] -= X[t][i][j];
             }
         }
+
+        for (int t = 1; t <= T; t++) {
+            for (int i = 1; i <= M; i++)
+                for (int j = 1; j <= N; j++)
+                    if (Y[i][j] < Q) {
+                        if (siteRemain[t][j] > 0) avail[t][i]++;
+                        if (remain[t][i] > 0) siteAvail[t][j]++;
+                    }
+        }
+
+        ans = 0;
+
+        for (int t = 1; t <= T; t++) {
+            for (int i = 1; i <= M; i++) {
+                if (remain[t][i] <= 0 || !avail[t][i]) continue;
+                for (int j = 1; j <= N; j++)
+                    if (Y[i][j] < Q && siteAvail[t][j] && siteRemain[t][j] > 0) {
+                        int delta = min(siteRemain[t][j] / siteAvail[t][j], remain[t][i] / avail[t][i]);
+                        X[t][i][j] += delta;
+                        ans += delta;
+                    }
+            }
+        }
+        if (lastans > 0 && ans * beta < lastans) flag = false;
+        lastans = ans;
     }
 }
+
+double alpha = 0.8;
 
 long long baseLine[200], cap[9000][200];
 
@@ -163,8 +164,8 @@ inline void shuffleNMask(int NMask[], int N) { shuffle(NMask + 1, NMask + N + 1,
 
 int randInt(long long upper) { return rng() % (upper + 1); }
 
-void avg95per(int X[][40][200], int D[][40], const int C[], int Y[][200],
-              int T, int M, int N, int Q) {
+void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
+                   int T, int M, int N, int Q) {
     for (int t = 1; t <= T; ++t) {
         for (int j = 1; j <= N; ++j) {
             siteRemain[t][j] = C[j];
@@ -231,7 +232,6 @@ void avg95per(int X[][40][200], int D[][40], const int C[], int Y[][200],
             sum[j] += Scap[j];
     }
 
-    double alpha = 0.8;
     memset(cap, 0, sizeof cap);
     memset(baseLine, 0, sizeof baseLine);
     for (int t = 1; t <= T; t++)

@@ -29,15 +29,16 @@ int main() {
     memset(X, 0, sizeof(X));
 
     max5per(X, D, C, Y, T, M, N, Q);
-    max95per(X, D, C, Y, T, M, N, Q);
-    avg95per(X, D, C, Y, T, M, N, Q);
+    avg95perPart1(X, D, C, Y, T, M, N, Q);
+    avg95perPart2(X, D, C, Y, T, M, N, Q);
 
     int ansScore = runBenchmark(X, T, M, N);
     overwriteAns(X, Xans, T, M, N);
 
-    for (int i = 1; i <= 40; ++i) {
+    for (int iter = 1; iter <= 40; iter++) {
         iterate(X, D, C, Y, T, M, N, Q);
-        avg95per(X, D, C, Y, T, M, N, Q);
+        avg95perPart1(X, D, C, Y, T, M, N, Q);
+        avg95perPart2(X, D, C, Y, T, M, N, Q);
         int curScore = runBenchmark(X, T, M, N);
         if (curScore < ansScore) {
             ansScore = curScore;
