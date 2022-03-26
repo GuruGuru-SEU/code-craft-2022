@@ -17,6 +17,12 @@ int used[200]; // T*5%
 
 double log_C[1000010];
 
+inline int LOG2(unsigned int x){
+    static const int tb[32]={0,9,1,10,13,21,2,29,11,14,16,18,22,25,3,30,8,12,20,28,15,17,24,7,19,27,23,6,26,5,4,31};
+    x|=x>>1; x|=x>>2; x|=x>>4; x|=x>>8; x|=x>>16;
+    return tb[x*0x07C4ACDDu>>27];
+}
+
 void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
     int demand[200];
@@ -104,15 +110,43 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
 }
 
 int siteAvail[9000][200], avail[9000][40];
+int his[200];
 
 int beta = 128;
 
+double gmm = 0.93; // gamma
+
 void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
                    int T, int M, int N, int Q) {
-    bool flag = true;
-    int ans, lastans = -1;
-    while (flag) {
-        for (int t = 1; t <= T; ++t) {
+    memset(his, 0, sizeof his);
+    for (int t = 1; t <= T; t++) {
+        for (int j = 1; j <= N; ++j) {
+            siteRemain[t][j] = C[j];
+            siteAvail[t][j] = 0;
+            for (int i = 1; i <= M; ++i)
+                siteRemain[t][j] -= X[t][i][j];
+        }
+        for (int i = 1; i <= M; ++i) {
+            remain[t][i] = D[t][i];
+            avail[t][i] = 0;
+            for (int j = 1; j <= N; ++j)
+                remain[t][i] -= X[t][i][j];
+        }
+
+        for (int i = 1; i <= M; i++)
+            for (int j = 1; j <= N; j++)
+                if (Y[i][j] < Q && remain[t][i] > 0 && siteRemain[t][j] > 0 && !mark95[t][j]) {
+                    int delta = his[j] * gmm;
+                    if (C[j] - siteRemain[t][j] >= delta) continue;
+                    delta = min(delta - (C[j] - siteRemain[t][j]), remain[t][i]);
+                    remain[t][i] -= delta;
+                    siteRemain[t][j] -= delta;
+                    X[t][i][j] += delta;
+                }
+
+        bool flag = true;
+        int ans, lastans = -1;
+        while (flag) {
             for (int j = 1; j <= N; ++j) {
                 siteRemain[t][j] = C[j];
                 siteAvail[t][j] = 0;
@@ -125,36 +159,40 @@ void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
                 for (int j = 1; j <= N; ++j)
                     remain[t][i] -= X[t][i][j];
             }
-        }
 
-        for (int t = 1; t <= T; t++) {
             for (int i = 1; i <= M; i++)
                 for (int j = 1; j <= N; j++)
                     if (Y[i][j] < Q) {
-                        if (siteRemain[t][j] > 0) avail[t][i]++;
-                        if (remain[t][i] > 0) siteAvail[t][j]++;
+                        if (siteRemain[t][j] > 0) avail[t][i] += LOG2(siteRemain[t][i] + 1);
+                        if (remain[t][i] > 0) siteAvail[t][j] += LOG2(remain[t][i] + 1);
                     }
-        }
 
-        ans = 0;
+            ans = 0;
 
-        for (int t = 1; t <= T; t++) {
             for (int i = 1; i <= M; i++) {
                 if (remain[t][i] <= 0 || !avail[t][i]) continue;
                 for (int j = 1; j <= N; j++)
                     if (Y[i][j] < Q && siteAvail[t][j] && siteRemain[t][j] > 0) {
-                        int delta = min(siteRemain[t][j] / siteAvail[t][j], remain[t][i] / avail[t][i]);
+                        int delta = min(siteRemain[t][j] * LOG2(remain[t][i] + 1) / siteAvail[t][j], remain[t][i] * LOG2(siteRemain[t][i] + 1) / avail[t][i]);
                         X[t][i][j] += delta;
                         ans += delta;
                     }
             }
+            if (lastans >= 0 && ans * beta <= lastans) flag = false;
+            lastans = ans;
         }
-        if (lastans > 0 && ans * beta < lastans) flag = false;
-        lastans = ans;
+
+        for (int j = 1; j <= N; j++)
+            if (!mark95[t][j]) {
+                int sum = 0;
+                for (int i = 1; i <= M; ++i)
+                    sum += X[t][i][j];
+                if (his[j] < sum) his[j] = sum;
+            }
     }
 }
 
-double alpha = 0.8;
+double alpha = 0.5;
 
 long long baseLine[200], cap[9000][200];
 
@@ -166,18 +204,7 @@ int randInt(long long upper) { return rng() % (upper + 1); }
 
 void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                    int T, int M, int N, int Q) {
-    for (int t = 1; t <= T; ++t) {
-        for (int j = 1; j <= N; ++j) {
-            siteRemain[t][j] = C[j];
-            for (int i = 1; i <= M; ++i)
-                siteRemain[t][j] -= X[t][i][j];
-        }
-        for (int i = 1; i <= M; ++i) {
-            remain[t][i] = D[t][i];
-            for (int j = 1; j <= N; ++j)
-                remain[t][i] -= X[t][i][j];
-        }
-    }
+    memset(his, 0, sizeof his);
 
     int MMask[40], NMask[200];
     for (int i = 1; i <= M; ++i)
@@ -189,6 +216,16 @@ void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
     for (int j = 1; j <= N; ++j)
         sum[j] = C[j] / 10000 + 1ll;
     for (int t = 1; t <= T; ++t) {
+        for (int j = 1; j <= N; ++j) {
+            siteRemain[t][j] = C[j];
+            for (int i = 1; i <= M; ++i)
+                siteRemain[t][j] -= X[t][i][j];
+        }
+        for (int i = 1; i <= M; ++i) {
+            remain[t][i] = D[t][i];
+            for (int j = 1; j <= N; ++j)
+                remain[t][i] -= X[t][i][j];
+        }
         int Scap[200];
         long long Ssum = 0;
         bool flag = false;
@@ -240,11 +277,8 @@ void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                 cap[t][j] += X[t][i][j];
                 baseLine[j] += X[t][i][j];
             }
-    for (int j = 1; j <= N; j++) {
-        baseLine[j] = (double)baseLine[j] * alpha / T;
-        if (baseLine[j] > C[j]) baseLine[j] = C[j];
-        if (baseLine[j] < 0) baseLine[j] = 0;
-    }
+    for (int j = 1; j <= N; j++)
+        baseLine[j] = his[j] * alpha;
     for (int t = 1; t <= T; t++) {
         for (int jh = 1; jh <= N; jh++)
             if (cap[t][jh] > baseLine[jh] && !mark95[t][jh]) {
