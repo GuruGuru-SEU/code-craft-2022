@@ -26,23 +26,16 @@ int main() {
     readY(Y, M, N);
     readQ(Q);
 
-    /*
-     * Run Max-5-per algorithm.
-     */
     memset(X, 0, sizeof(X));
 
-    /*
-     * Run Jesus's algorithm.
-     */
     max5per(X, D, C, Y, T, M, N, Q);
-    max95perPart1(X, D, C, Y, T, M, N, Q);
-    max95perPart2(X, D, C, Y, T, M, N, Q);
+    max95per(X, D, C, Y, T, M, N, Q);
     avg95per(X, D, C, Y, T, M, N, Q);
 
     int ansScore = runBenchmark(X, T, M, N);
     overwriteAns(X, Xans, T, M, N);
 
-    for (int i = 1; i <= 50; ++i) {
+    for (int i = 1; i <= 40; ++i) {
         iterate(X, D, C, Y, T, M, N, Q);
         avg95per(X, D, C, Y, T, M, N, Q);
         int curScore = runBenchmark(X, T, M, N);

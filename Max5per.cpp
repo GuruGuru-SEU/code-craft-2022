@@ -15,9 +15,13 @@ int siteRemain[9000][200];
 bool mark95[9000][200];
 int used[200]; // T*5%
 
+double log_C[1000010];
+
 void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
     int demand[200];
+    for (int i = 1; i <= 1e6; i++)
+        log_C[i] = log((double)i + 2.0);
     memset(used, 0, sizeof used); // T*5%
     memcpy(remain, D, sizeof remain);
     bool flag = true;
@@ -32,8 +36,8 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
         int maxn = 0, maxj = 1, maxt = 1;
         for (int t = 1; t <= T; t++)
             for (int j = 1; j <= N; j++)
-                if (used[j] < threshold && !mark95[t][j] && siteRemain[t][j] > maxn) {
-                    maxn = siteRemain[t][j];
+                if (used[j] < threshold && !mark95[t][j] && siteRemain[t][j] * log_C[C[j]] > maxn) {
+                    maxn = siteRemain[t][j] * log_C[C[j]];
                     maxj = j;
                     maxt = t;
                 }
@@ -44,7 +48,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
             int isp = C[maxj];
             for (int i = 1; i <= M; i++)
                 demand[i] = remain[maxt][i];
-            int l = -1, r = 1e7;
+            int l = -1, r = 1e6;
             while (l + 1 < r) {
                 int mid = (l + r) >> 1;
                 int tmp_isp = isp;
@@ -99,60 +103,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
     }
 }
 
-void max95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
-                   int T, int M, int N, int Q) {
-    for (int t = 1; t <= T; ++t) {
-        for (int j = 1; j <= N; ++j) {
-            siteRemain[t][j] = C[j];
-            for (int i = 1; i <= M; ++i) {
-                siteRemain[t][j] -= X[t][i][j];
-            }
-        }
-        for (int i = 1; i <= M; ++i) {
-            remain[t][i] = D[t][i];
-            for (int j = 1; j <= N; ++j)
-                remain[t][i] -= X[t][i][j];
-        }
-    }
-
-    for (int j = 1; j <= N; ++j) {
-        int minn = 1e9, cur = 0;
-        for (int t = 1; t <= T; ++t) {
-            if (siteRemain[t][j] == 0)
-                continue;
-            cur = 0;
-            for (int i = 1; i <= M; ++i) {
-                if (Y[i][j] >= Q)
-                    continue;
-                cur += remain[t][i];
-            }
-            minn = min(minn, min(cur, siteRemain[t][j]));
-        }
-
-        for (int t = 1; t <= T; ++t) {
-            if (siteRemain[t][j] == 0)
-                continue;
-            for (int i = M; i >= 1; --i) {
-                if (Y[i][j] >= Q)
-                    continue;
-                if (remain[t][i] >= minn) {
-                    siteRemain[t][j] -= minn;
-                    remain[t][i] -= minn;
-                    X[t][i][j] += minn;
-                    minn = 0;
-                    break;
-                } else {
-                    siteRemain[t][j] -= remain[t][i];
-                    X[t][i][j] += remain[t][i];
-                    minn -= remain[t][i];
-                    remain[t][i] = 0;
-                }
-            }
-        }
-    }
-}
-
-void max95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
+void max95per(int X[][40][200], int D[][40], const int C[], int Y[][200],
                    int T, int M, int N, int Q) {
     for (int t = 1; t <= T; ++t) {
         for (int j = 1; j <= N; ++j) {
@@ -166,9 +117,8 @@ void max95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                 remain[t][i] -= X[t][i][j];
         }
     }
-
+    
     for (int t = 1; t <= T; ++t) {
-
         for (int i = M; i >= 1; --i) {
             if (remain[t][i] == 0)
                 continue;
