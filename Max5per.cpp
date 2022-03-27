@@ -17,6 +17,14 @@ int used[200]; // T*5%
 
 double log_C[1000010];
 
+int MMask[40], NMask[200], TMask[9000];
+
+inline void shuffleTMask(int TMask[], int T) { shuffle(TMask + 1, TMask + T + 1, rng); }
+
+inline void shuffleMMask(int MMask[], int M) { shuffle(MMask + 1, MMask + M + 1, rng); }
+
+inline void shuffleNMask(int NMask[], int N) { shuffle(NMask + 1, NMask + N + 1, rng); }
+
 inline int LOG2(unsigned int x) {
     static const int tb[32] = {0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30, 8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31};
     x |= x >> 1;
@@ -78,6 +86,10 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
                         siteRemain[maxt][j] -= remain[maxt][i];
                     }
             for (int i = 1; i <= M; i++)
+                MMask[i] = i;
+            shuffleMMask(MMask, M);
+            for (int ii = 1; ii <= M; ii++) {
+                int i = MMask[ii];
                 if (Y[i][maxj] < Q && demand[i] > r) {
                     int nd = demand[i] - r;
                     demand[i] = r;
@@ -92,7 +104,9 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
                         break; // used up
                     }
                 }
-            for (int i = 1; i <= M; i++)
+            }
+            for (int ii = 1; ii <= M; ii++) {
+                int i = MMask[ii];
                 if (Y[i][maxj] < Q && demand[i]) {
                     if (isp > demand[i]) {
                         X[maxt][i][maxj] += demand[i];
@@ -105,6 +119,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
                         break; // used up
                     }
                 }
+            }
             for (int i = 1; i <= M; i++)
                 for (int j = 1; j <= N; j++)
                     if (Y[i][j] < Q && j != maxj)
@@ -123,6 +138,16 @@ double gmm = 0.93; // gamma
 void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
                    int T, int M, int N, int Q) {
     memset(his, 0, sizeof his);
+    for (int t = 1; t <= T; t++)
+        for (int i = 1; i <= M; i++)
+            for (int j = 1; j <= N; j++)
+                if (!mark95[t][j]) {
+                    int sum = 0;
+                    for (int i = 1; i <= M; ++i)
+                        sum += X[t][i][j];
+                    if (his[j] < sum) his[j] = sum;
+                }
+
     for (int t = 1; t <= T; t++) {
         for (int j = 1; j <= N; ++j) {
             siteRemain[t][j] = C[j];
@@ -167,8 +192,8 @@ void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
             for (int i = 1; i <= M; i++)
                 for (int j = 1; j <= N; j++)
                     if (Y[i][j] < Q) {
-                        if (siteRemain[t][j] > 0) avail[t][i] += LOG2(siteRemain[t][i] + 1);
-                        if (remain[t][i] > 0) siteAvail[t][j] += LOG2(remain[t][i] + 1);
+                        if (siteRemain[t][j] > 0) avail[t][i]++;
+                        if (remain[t][i] > 0) siteAvail[t][j]++;
                     }
 
             ans = 0;
@@ -177,7 +202,7 @@ void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
                 if (remain[t][i] <= 0 || !avail[t][i]) continue;
                 for (int j = 1; j <= N; j++)
                     if (Y[i][j] < Q && siteAvail[t][j] && siteRemain[t][j] > 0) {
-                        int delta = min(siteRemain[t][j] * LOG2(remain[t][i] + 1) / siteAvail[t][j], remain[t][i] * LOG2(siteRemain[t][i] + 1) / avail[t][i]);
+                        int delta = min(siteRemain[t][j] / siteAvail[t][j], remain[t][i] / avail[t][i]);
                         X[t][i][j] += delta;
                         ans += delta;
                     }
@@ -196,16 +221,9 @@ void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
     }
 }
 
-double alpha = 0.5;
+double alpha = 0.8;
 
 long long baseLine[200], cap[9000][200];
-int MMask[40], NMask[200], TMask[9000];
-
-inline void shuffleTMask(int TMask[], int T) { shuffle(TMask + 1, TMask + T + 1, rng); }
-
-inline void shuffleMMask(int MMask[], int M) { shuffle(MMask + 1, MMask + M + 1, rng); }
-
-inline void shuffleNMask(int NMask[], int N) { shuffle(NMask + 1, NMask + N + 1, rng); }
 
 int randInt(long long upper) { return rng() % (upper + 1); }
 
@@ -232,7 +250,7 @@ void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
     int Shis[200];
     for (int j = 1; j <= N; ++j)
         Shis[j] = C[j] / 8192 + 1ll;
-    
+
     shuffleTMask(TMask, T);
     for (int tt = 1; tt <= T; ++tt) {
         int t = TMask[tt];
