@@ -36,6 +36,7 @@ int main() {
     overwriteAns(X, Xans, T, M, N);
 
     for (int iter = 1; iter <= 10; iter++) {
+        cout << ansScore << endl;
         iterate(X, D, C, Y, T, M, N, Q);
         avg95perPart1(X, D, C, Y, T, M, N, Q);
         avg95perPart2(X, D, C, Y, T, M, N, Q);
