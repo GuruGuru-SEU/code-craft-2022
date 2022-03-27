@@ -15,7 +15,7 @@ int siteRemain[9000][200];
 bool mark95[9000][200];
 int used[200]; // T*5%
 
-double log_C[1000010];
+double sqrt_C[1000010];
 
 int MMask[40], NMask[200], TMask[9000];
 
@@ -39,7 +39,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
     int demand[200];
     for (int i = 0; i <= 1e6; i++)
-        log_C[i] = log((double)i + 2.0);
+        sqrt_C[i] = sqrt((double)i + 2.0);
     memset(used, 0, sizeof used); // T*5%
     memcpy(remain, D, sizeof remain);
     bool flag = true;
@@ -54,8 +54,8 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
         int maxn = 0, maxj = 1, maxt = 1;
         for (int t = 1; t <= T; t++)
             for (int j = 1; j <= N; j++)
-                if (used[j] < threshold && !mark95[t][j] && siteRemain[t][j] * log_C[C[j]] > maxn) {
-                    maxn = siteRemain[t][j] * log_C[C[j]];
+                if (used[j] < threshold && !mark95[t][j] && siteRemain[t][j] * sqrt_C[C[j]] > maxn) {
+                    maxn = siteRemain[t][j] * sqrt_C[C[j]];
                     maxj = j;
                     maxt = t;
                 }
