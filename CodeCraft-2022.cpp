@@ -35,7 +35,7 @@ int main() {
     int ansScore = runBenchmark(X, T, M, N);
     overwriteAns(X, Xans, T, M, N);
 
-    for (int iter = 1; iter <= 20; iter++) {
+    for (int iter = 1; iter <= 27; iter++) {
         iterate(X, D, C, Y, T, M, N, Q);
         avg95perPart1(X, D, C, Y, T, M, N, Q);
         avg95perPart2(X, D, C, Y, T, M, N, Q);

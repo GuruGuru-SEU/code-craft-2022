@@ -87,7 +87,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
                     }
             for (int i = 1; i <= M; i++)
                 MMask[i] = i;
-            shuffleMMask(MMask, M);
+            sort(MMask + 1, MMask + M + 1, [&](int a, int b) {return demand[a] > demand[b];});
             for (int ii = 1; ii <= M; ii++) {
                 int i = MMask[ii];
                 if (Y[i][maxj] < Q && demand[i] > r) {
@@ -169,7 +169,7 @@ void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
                     X[t][i][j] += (long long)remain[t][i] * (siteRemain[t][j] * LOG2(siteAvail[t][j] + 2)) / sum[t][i];
 }
 
-double alpha_0 = 0.95;
+double alpha_0 = 0.96;
 
 long long baseLine[200], cap[9000][200];
 int cnt[200];
@@ -239,7 +239,7 @@ void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
     }
 
     double alpha = alpha_0;
-    for (int TT = 0; TT < 3; TT++) {
+    for (int TT = 0; TT < 4; TT++) {
         memset(his, 0, sizeof his);
         for (int t = 1; t <= T; t++)
             for (int i = 1; i <= M; i++)
