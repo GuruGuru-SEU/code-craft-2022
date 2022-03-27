@@ -11,8 +11,6 @@ using namespace std;
 
 pair<int, int> sortPair[9000];
 
-double zeta = 0.6;
-
 void iterate(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
              int M, int N, int Q) {
     int pos = ceil(0.95 * T);
@@ -27,7 +25,7 @@ void iterate(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
         for (int tt = 0.85 * pos; tt <= pos; ++tt) {
             int t = sortPair[tt].second;
             for (int i = 1; i <= M; ++i)
-                X[t][i][j] = (X[t][i][j] >> 1) + (X[t][i][j] >> 2);
+                X[t][i][j] -= (X[t][i][j] >> 2);
         }
     }
 }

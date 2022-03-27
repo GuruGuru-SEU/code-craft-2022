@@ -43,7 +43,7 @@ void max5per(int X[][40][200], int D[][40], const int C[], int Y[][200], int T,
     memset(used, 0, sizeof used); // T*5%
     memcpy(remain, D, sizeof remain);
     bool flag = true;
-    int threshold = floor((double)T * 0.05); // last 5%
+    int threshold = T - ceil((double)T * 0.95); // last 5%
     for (int t = 1; t <= T; t++)
         for (int i = 1; i <= M; i++)
             for (int j = 1; j <= N; j++)
@@ -221,25 +221,15 @@ void avg95perPart1(int X[][40][200], int D[][40], const int C[], int Y[][200],
     }
 }
 
-double alpha = 0.8;
+double alpha_0 = 0.96;
 
 long long baseLine[200], cap[9000][200];
+int cnt[200];
 
 int randInt(long long upper) { return rng() % (upper + 1); }
 
 void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
                    int T, int M, int N, int Q) {
-    memset(his, 0, sizeof his);
-    for (int t = 1; t <= T; t++)
-        for (int i = 1; i <= M; i++)
-            for (int j = 1; j <= N; j++)
-                if (!mark95[t][j]) {
-                    int sum = 0;
-                    for (int i = 1; i <= M; ++i)
-                        sum += X[t][i][j];
-                    if (his[j] < sum) his[j] = sum;
-                }
-
     for (int t = 1; t <= T; t++)
         TMask[t] = t;
     for (int i = 1; i <= M; ++i)
@@ -299,44 +289,60 @@ void avg95perPart2(int X[][40][200], int D[][40], const int C[], int Y[][200],
         for (int j = 1; j <= N; ++j)
             if (Shis[j] < Scap[j]) Shis[j] = Scap[j];
     }
-
-    memset(cap, 0, sizeof cap);
-    memset(baseLine, 0, sizeof baseLine);
-    for (int t = 1; t <= T; t++)
-        for (int i = 1; i <= M; i++)
-            for (int j = 1; j <= N; j++) {
-                cap[t][j] += X[t][i][j];
-                baseLine[j] += X[t][i][j];
-            }
-    for (int j = 1; j <= N; j++)
-        baseLine[j] = (double)baseLine[j] * alpha;
-    for (int t = 1; t <= T; t++) {
-        for (int jh = 1; jh <= N; jh++)
-            if (cap[t][jh] > baseLine[jh] && !mark95[t][jh]) {
-                for (int i = 1; i <= M; i++)
-                    if (Y[i][jh] < Q) {
-                        for (int jt = 1; jt <= N; jt++)
-                            if (Y[i][jt] < Q) {
-                                if (cap[t][jt] < baseLine[jt]) {
-                                    int delta = min(
-                                        min((long long)X[t][i][jh], baseLine[jt] - cap[t][jt]),
-                                        cap[t][jh] - baseLine[jh]);
-                                    cap[t][jh] -= delta;
-                                    cap[t][jt] += delta;
-                                    X[t][i][jh] -= delta;
-                                    X[t][i][jt] += delta;
-                                }
-                                if (mark95[t][jt]) {
-                                    int delta =
-                                        min(min((long long)X[t][i][jh], C[jt] - cap[t][jt]),
-                                            cap[t][jh] - baseLine[jh]);
-                                    cap[t][jh] -= delta;
-                                    cap[t][jt] += delta;
-                                    X[t][i][jh] -= delta;
-                                    X[t][i][jt] += delta;
-                                }
-                            }
+    
+    double alpha = alpha_0;
+    for (int TT = 0; TT < 3; TT++) {
+        memset(his, 0, sizeof his);
+        for (int t = 1; t <= T; t++)
+            for (int i = 1; i <= M; i++)
+                for (int j = 1; j <= N; j++)
+                    if (!mark95[t][j]) {
+                        int sum = 0;
+                        for (int i = 1; i <= M; ++i)
+                            sum += X[t][i][j];
+                        if (his[j] < sum) his[j] = sum;
                     }
-            }
+        memset(cap, 0, sizeof cap);
+        memset(baseLine, 0, sizeof baseLine);
+        for (int t = 1; t <= T; t++)
+            for (int i = 1; i <= M; i++)
+                for (int j = 1; j <= N; j++)
+                    cap[t][j] += X[t][i][j];
+        for (int j = 1; j <= N; j++)
+            for (int t = 1; t <= T; t++)
+                if (cap[t][j])
+                    cnt[j]++;
+        for (int j = 1; j <= N; j++)
+            baseLine[j] = his[j] * alpha;
+        for (int t = 1; t <= T; t++) {
+            for (int jh = 1; jh <= N; jh++)
+                if (cap[t][jh] > baseLine[jh] && !mark95[t][jh]) {
+                    for (int i = 1; i <= M; i++)
+                        if (Y[i][jh] < Q) {
+                            for (int jt = 1; jt <= N; jt++)
+                                if (Y[i][jt] < Q) {
+                                    if (cap[t][jt] < baseLine[jt]) {
+                                        int delta = min(
+                                            min((long long)X[t][i][jh], baseLine[jt] - cap[t][jt]),
+                                            cap[t][jh] - baseLine[jh]);
+                                        cap[t][jh] -= delta;
+                                        cap[t][jt] += delta;
+                                        X[t][i][jh] -= delta;
+                                        X[t][i][jt] += delta;
+                                    }
+                                    if (mark95[t][jt]) {
+                                        int delta =
+                                            min(min((long long)X[t][i][jh], C[jt] - cap[t][jt]),
+                                                cap[t][jh] - baseLine[jh]);
+                                        cap[t][jh] -= delta;
+                                        cap[t][jt] += delta;
+                                        X[t][i][jh] -= delta;
+                                        X[t][i][jt] += delta;
+                                    }
+                                }
+                        }
+                }
+        }
+        alpha *= alpha_0;
     }
 }
