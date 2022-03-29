@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 project("CodeCraft-2021")
 
 # include路径
-include_directories(${PROJECT_SOURCE_DIR}/lib)
+include_directories(${PROJECT_SOURCE_DIR}/libs)
 
 # 设置可执行文件生成路径
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
@@ -23,4 +23,4 @@ SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++11")
 aux_source_directory(. DIR_SRCS)
 
 # 指定生成目标
-add_executable(CodeCraft-2022 ${DIR_SRCS} utils/FileIO.cpp utils/FileIO.h utils/Benchmark.h utils/Benchmark.cpp RandCusXArr.cpp RandCusXArr.h)
+add_executable(CodeCraft-2022 ${DIR_SRCS} utils/Benchmark.cpp utils/Benchmark.hpp utils/FileIO.cpp utils/FileIO.hpp)

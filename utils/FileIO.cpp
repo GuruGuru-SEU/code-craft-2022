@@ -1,8 +1,14 @@
-#include "FileIO.h"
+#include "FileIO.hpp"
+#include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 using namespace std;
+
+int Dt[9000][40];
+string clientNamet[40];
+pair<string, int> clientNamest[40];
 
 void readDemand(int D[][40], string clientName[], int &M, int &T) {
   fstream fin;
@@ -19,7 +25,7 @@ void readDemand(int D[][40], string clientName[], int &M, int &T) {
   getline(ss, element, ',');
   while (getline(ss, element, ',')) {
     ++M;
-    clientName[M] = element;
+    clientNamet[M] = element;
   }
   while (getline(fin, line)) {
     if (line[line.size() - 1] == '\r')
@@ -30,11 +36,26 @@ void readDemand(int D[][40], string clientName[], int &M, int &T) {
     getline(ss, element, ',');
     for (int i = 1; i <= M; ++i) {
       getline(ss, element, ',');
-      D[T][i] = stoi(element);
+      Dt[T][i] = stoi(element);
     }
   }
   fin.close();
+  for (int i = 1; i <= M; ++i) {
+    clientNamest[i] = make_pair(clientNamet[i], i);
+  }
+  sort(clientNamest + 1, clientNamest + M + 1);
+  for (int i = 1; i <= M; ++i) {
+    int it = clientNamest[i].second;
+    clientName[i] = clientNamest[i].first;
+    for (int t = 1; t <= T; ++t)
+      D[t][i] = Dt[t][it];
+  }
+  sort(clientNamet + 1, clientNamet + M + 1);
 }
+
+int Ct[200];
+string siteNamet[200];
+pair<string, int> siteNamest[200];
 
 void readCap(int C[], string siteName[], int &N) {
   fstream fin;
@@ -54,12 +75,24 @@ void readCap(int C[], string siteName[], int &N) {
     ss.clear();
     ss.str(line);
     getline(ss, element, ',');
-    siteName[N] = element;
+    siteNamet[N] = element;
     getline(ss, element, ',');
-    C[N] = stoi(element);
+    Ct[N] = stoi(element);
   }
   fin.close();
+  for (int j = 1; j <= N; ++j) {
+    siteNamest[j] = make_pair(siteNamet[j], j);
+  }
+  sort(siteNamest + 1, siteNamest + N + 1);
+  for (int j = 1; j <= N; ++j) {
+    int jt = siteNamest[j].second;
+    siteName[j] = siteNamest[j].first;
+    C[j] = Ct[jt];
+  }
+  sort(siteNamet + 1, siteNamet + N + 1);
 }
+
+string stri[40], strj[200];
 
 void readY(int Y[][200], int M, int N) {
   fstream fin;
@@ -72,6 +105,12 @@ void readY(int Y[][200], int M, int N) {
   getline(fin, line);
   if (line[line.size() - 1] == '\r')
     line = line.substr(0, line.size() - 1);
+  ss.str(line);
+  getline(ss, element, ',');
+  for (int i = 1; i <= M; ++i) {
+    getline(ss, element, ',');
+    stri[i] = element;
+  }
   for (int j = 1; j <= N; ++j) {
     getline(fin, line);
     if (line[line.size() - 1] == '\r')
@@ -79,9 +118,14 @@ void readY(int Y[][200], int M, int N) {
     ss.clear();
     ss.str(line);
     getline(ss, element, ',');
+    strj[j] = element;
     for (int i = 1; i <= M; ++i) {
       getline(ss, element, ',');
-      Y[i][j] = stoi(element);
+      int in = lower_bound(clientNamet + 1, clientNamet + M + 1, stri[i]) -
+               clientNamet;
+      int jn =
+          lower_bound(siteNamet + 1, siteNamet + N + 1, strj[j]) - siteNamet;
+      Y[in][jn] = stoi(element);
     }
   }
   fin.close();
@@ -105,6 +149,14 @@ void readQ(int &Q) {
   Q = stoi(element);
   fin.close();
 }
+
+void overwriteAns(int X[][40][200], int Xans[][40][200], int T, int M, int N) {
+  for (int t = 1; t <= T; ++t)
+    for (int i = 1; i <= M; ++i)
+      for (int j = 1; j <= N; ++j)
+        Xans[t][i][j] = X[t][i][j];
+}
+
 
 void printAns(string clientName[], string siteName[], int Xans[][40][200],
               int T, int M, int N) {

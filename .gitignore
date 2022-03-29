@@ -1,0 +1,4 @@
+build/
+bin/output/
+bin/CodeCraft-2022.exe
+bin/benchmark.py
